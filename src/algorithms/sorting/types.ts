@@ -8,7 +8,15 @@ export type SortAlgorithmId =
   | "shell"
   | "cocktail"
   | "comb"
-  | "radix";
+  | "radix"
+  | "gnome"
+  | "pancake"
+  | "cycle"
+  | "oddEven"
+  | "counting"
+  | "bitonic"
+  | "tim"
+  | "stooge";
 
 export type SortCounters = {
   comparisons: number;
@@ -24,6 +32,8 @@ export type SortStep = {
   sorted: Set<number>;
   counters: SortCounters;
   done?: boolean;
+  /** Marks steps of the post-sort verification sweep. */
+  verify?: boolean;
 };
 
 export function snapshot(

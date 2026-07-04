@@ -7,6 +7,7 @@ import { Toggle } from "@/components/ui/Toggle";
 import {
   PATH_ALGORITHMS,
   SORT_ALGORITHMS,
+  SPEED_OPTIONS,
   type Mode,
   type Speed,
 } from "@/lib/constants";
@@ -58,15 +59,15 @@ export function ControlBar({
   const duplicateBlocked = algorithmA === algorithmB && !mirrorTest;
 
   return (
-    <section className="my-4 rounded-[18px] border border-[var(--border)] bg-[var(--surface)] p-3 shadow-[inset_0_1px_rgba(255,255,255,.4)]">
+    <section className="my-4 rounded-[18px] border border-[var(--border)] bg-[var(--surface)] p-3 shadow-[inset_0_1px_var(--edge)]">
       <div className="grid gap-3 xl:grid-cols-[1fr_auto] xl:items-center">
         <div className="grid gap-2 md:grid-cols-2 lg:grid-cols-[1fr_1fr_auto_auto]">
           <label className="grid gap-1">
             <span className="text-xs text-[var(--muted)]">Algorithm A</span>
             <Select value={algorithmA} onChange={(event) => onAlgorithmA(event.target.value as never)}>
               {options.map((item) => (
-                <option key={item.id} value={item.id} disabled={"locked" in item && item.locked}>
-                  {item.label}{"locked" in item && item.locked ? " - Advanced" : ""}
+                <option key={item.id} value={item.id}>
+                  {item.label}
                 </option>
               ))}
             </Select>
@@ -75,8 +76,8 @@ export function ControlBar({
             <span className="text-xs text-[var(--muted)]">Algorithm B</span>
             <Select value={algorithmB} onChange={(event) => onAlgorithmB(event.target.value as never)}>
               {options.map((item) => (
-                <option key={item.id} value={item.id} disabled={"locked" in item && item.locked}>
-                  {item.label}{"locked" in item && item.locked ? " - Advanced" : ""}
+                <option key={item.id} value={item.id}>
+                  {item.label}
                 </option>
               ))}
             </Select>
@@ -84,10 +85,11 @@ export function ControlBar({
           <label className="grid gap-1">
             <span className="text-xs text-[var(--muted)]">Step delay</span>
             <Select value={speed} onChange={(event) => onSpeed(event.target.value as Speed)}>
-              <option value="slow">Slow - 180ms</option>
-              <option value="medium">Medium - 80ms</option>
-              <option value="fast">Fast - 25ms</option>
-              <option value="manual">Manual step</option>
+              {SPEED_OPTIONS.map((item) => (
+                <option key={item.id} value={item.id}>
+                  {item.label}
+                </option>
+              ))}
             </Select>
           </label>
           <div className="flex items-end gap-2">

@@ -8,6 +8,7 @@ import type { PanelRunState } from "@/store/useSimulationStore";
 export function ComparisonGrid({
   mode,
   titles,
+  subtitles,
   panels,
   maze,
   seedArray,
@@ -19,6 +20,7 @@ export function ComparisonGrid({
 }: {
   mode: Mode;
   titles: { a: string; b: string };
+  subtitles?: { a: string; b: string };
   panels: { a: PanelRunState; b: PanelRunState };
   maze: MazeState;
   seedArray: number[];
@@ -34,6 +36,7 @@ export function ComparisonGrid({
         side="A"
         mode={mode}
         title={titles.a}
+        subtitle={subtitles?.a}
         run={panels.a}
         maze={maze}
         seedArray={seedArray}
@@ -47,6 +50,7 @@ export function ComparisonGrid({
         side="B"
         mode={mode}
         title={titles.b}
+        subtitle={subtitles?.b}
         run={panels.b}
         maze={maze}
         seedArray={seedArray}

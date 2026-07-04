@@ -6,7 +6,10 @@ export type PathAlgorithmId =
   | "greedy"
   | "weightedAstar"
   | "bidirectionalBfs"
-  | "jps";
+  | "jps"
+  | "idaStar"
+  | "tremaux"
+  | "deadEndFill";
 
 export type Point = { x: number; y: number };
 export type GridNode = Point & { wall: boolean };

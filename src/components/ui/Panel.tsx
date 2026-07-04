@@ -10,7 +10,7 @@ export function Panel({
   return (
     <section
       className={cn(
-        "rounded-[16px] border border-[var(--border)] bg-[var(--surface)] shadow-[0_1px_0_rgba(255,255,255,.45)_inset,0_8px_18px_rgba(29,27,24,.06)]",
+        "rounded-[16px] border border-[var(--border)] bg-[var(--surface)] shadow-[0_1px_0_var(--edge)_inset,0_8px_18px_var(--panel-shadow)]",
         className,
       )}
     >

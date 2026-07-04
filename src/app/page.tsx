@@ -9,14 +9,10 @@ import { SortToolbar } from "@/components/sorting/SortToolbar";
 import type { PathStep, MazeState, PathAlgorithmId } from "@/algorithms/pathfinding/types";
 import { keyOf } from "@/algorithms/pathfinding/types";
 import type { SortAlgorithmId, SortStep } from "@/algorithms/sorting/types";
-import {
-  PATH_ALGORITHMS,
-  SORT_ALGORITHMS,
-  STEP_DELAYS,
-  type ArraySize,
-} from "@/lib/constants";
-import { makeMaze, makeOpenGrid, seededRandom } from "@/lib/maze";
+import { PATH_ALGORITHMS, SORT_ALGORITHMS, SPEED_CONFIG } from "@/lib/constants";
+import { makeMaze, makeOpenGrid } from "@/lib/maze";
 import { pairFrom, randomInt } from "@/lib/random";
+import { makeArray } from "@/lib/sortData";
 import { playSortStepTone } from "@/lib/sortAudio";
 import { createPathGenerator } from "@/simulation/pathfindingRunner";
 import { createSortGenerator } from "@/simulation/sortingRunner";
@@ -25,22 +21,22 @@ import { useAlgorithmStore } from "@/store/useAlgorithmStore";
 import { useSettingsStore } from "@/store/useSettingsStore";
 import { useSimulationStore } from "@/store/useSimulationStore";
 
-function makeArray(size: ArraySize, seed = 2049) {
-  const random = seededRandom(seed);
-  const items = Array.from({ length: size }, (_, index) => index + 1);
-  for (let i = items.length - 1; i > 0; i -= 1) {
-    const j = Math.floor(random() * (i + 1));
-    [items[i], items[j]] = [items[j], items[i]];
-  }
-  return items;
-}
-
 function algorithmLabel(id: string) {
   return (
     PATH_ALGORITHMS.find((item) => item.id === id)?.label ??
     SORT_ALGORITHMS.find((item) => item.id === id)?.label ??
     id
   );
+}
+
+function algorithmMeta(id: string) {
+  const path = PATH_ALGORITHMS.find((item) => item.id === id);
+  if (path) {
+    return `${path.complexity} · ${path.optimal ? "shortest path guaranteed" : "not always shortest"}`;
+  }
+  const sort = SORT_ALGORITHMS.find((item) => item.id === id);
+  if (sort) return `avg ${sort.average} · worst ${sort.worst}`;
+  return "";
 }
 
 function randomOpenPoint(maze: MazeState) {
@@ -62,6 +58,8 @@ export default function Home() {
   const speed = useSettingsStore((s) => s.speed);
   const gridSize = useSettingsStore((s) => s.gridSize);
   const arraySize = useSettingsStore((s) => s.arraySize);
+  const distribution = useSettingsStore((s) => s.distribution);
+  const soundStyle = useSettingsStore((s) => s.soundStyle);
   const stopOnFirst = useSettingsStore((s) => s.stopOnFirst);
   const mirrorTest = useSettingsStore((s) => s.mirrorTest);
   const setTheme = useSettingsStore((s) => s.setTheme);
@@ -69,6 +67,8 @@ export default function Home() {
   const setSpeed = useSettingsStore((s) => s.setSpeed);
   const setGridSize = useSettingsStore((s) => s.setGridSize);
   const setArraySize = useSettingsStore((s) => s.setArraySize);
+  const setDistribution = useSettingsStore((s) => s.setDistribution);
+  const setSoundStyle = useSettingsStore((s) => s.setSoundStyle);
   const setStopOnFirst = useSettingsStore((s) => s.setStopOnFirst);
   const setMirrorTest = useSettingsStore((s) => s.setMirrorTest);
   const pathA = useAlgorithmStore((s) => s.pathA);
@@ -85,13 +85,15 @@ export default function Home() {
   const updatePanel = useSimulationStore((s) => s.updatePanel);
   const resetSimulation = useSimulationStore((s) => s.reset);
   const [maze, setMaze] = useState(() => makeMaze(gridSize));
-  const [seedArray, setSeedArray] = useState(() => makeArray(arraySize));
+  const [seedArray, setSeedArray] = useState(() => makeArray(arraySize, distribution));
   const [audioPanel, setAudioPanel] = useState<"a" | "b" | null>("a");
   const pathGenerators = useRef<{ a?: Generator<PathStep>; b?: Generator<PathStep> }>({});
   const sortGenerators = useRef<{ a?: Generator<SortStep>; b?: Generator<SortStep> }>({});
   const completedRef = useRef({ a: false, b: false });
+  const verifyingRef = useRef({ a: false, b: false });
   const startedRef = useRef({ a: 0, b: 0 });
   const audioPanelRef = useRef<"a" | "b" | null>(audioPanel);
+  const soundStyleRef = useRef(soundStyle);
 
   const currentAlgorithms =
     mode === "pathfinding" ? { a: pathA, b: pathB } : { a: sortA, b: sortB };
@@ -104,10 +106,15 @@ export default function Home() {
     audioPanelRef.current = audioPanel;
   }, [audioPanel]);
 
+  useEffect(() => {
+    soundStyleRef.current = soundStyle;
+  }, [soundStyle]);
+
   const resetRun = useCallback(() => {
     pathGenerators.current = {};
     sortGenerators.current = {};
     completedRef.current = { a: false, b: false };
+    verifyingRef.current = { a: false, b: false };
     startedRef.current = { a: 0, b: 0 };
     resetSimulation();
   }, [resetSimulation]);
@@ -121,10 +128,10 @@ export default function Home() {
 
   useEffect(() => {
     queueMicrotask(() => {
-      setSeedArray(makeArray(arraySize, Date.now()));
+      setSeedArray(makeArray(arraySize, distribution, Date.now()));
       resetRun();
     });
-  }, [arraySize, resetRun]);
+  }, [arraySize, distribution, resetRun]);
 
   const finalizeIfDone = useCallback(() => {
     if (!completedRef.current.a || !completedRef.current.b) return;
@@ -139,7 +146,7 @@ export default function Home() {
   }, [mode, setGlobalStatus, updatePanel]);
 
   const tickPanel = useCallback(
-    (panel: "a" | "b") => {
+    (panel: "a" | "b", stepCount = 1) => {
       if (completedRef.current[panel]) return;
       const startedAt = startedRef.current[panel] || performance.now();
       startedRef.current[panel] = startedAt;
@@ -147,34 +154,66 @@ export default function Home() {
         mode === "pathfinding"
           ? pathGenerators.current[panel]
           : sortGenerators.current[panel];
-      const next = generator?.next();
+
+      let consumed = 0;
+      let last: PathStep | SortStep | undefined;
+      let exhausted = false;
+      while (consumed < stepCount) {
+        const next = generator?.next();
+        if (!next || next.done) {
+          exhausted = true;
+          break;
+        }
+        consumed += 1;
+        last = next.value;
+        if (last.done || ("failed" in last && last.failed)) break;
+        // The verification sweep runs on its own fixed clock: never batch
+        // past its first step, whatever the speed setting.
+        if ("verify" in last && last.verify) {
+          verifyingRef.current[panel] = true;
+          break;
+        }
+      }
+
       const elapsed = performance.now() - startedAt;
-      if (!next || next.done) {
+      if (!last) {
         completedRef.current[panel] = true;
         updatePanel(panel, { status: "complete", elapsed, finishedAt: performance.now() });
         finalizeIfDone();
         return;
       }
+
+      const failed = "failed" in last && !!last.failed;
+      const done = !!last.done || exhausted;
+      if (mode === "sorting" && audioPanelRef.current === panel) {
+        playSortStepTone(last as SortStep, soundStyleRef.current);
+      }
       const patch =
         mode === "pathfinding"
-          ? { pathStep: next.value as PathStep }
-          : { sortStep: next.value as SortStep };
-      const failed = "failed" in next.value && next.value.failed;
-      if (mode === "sorting" && audioPanelRef.current === panel) {
-        playSortStepTone(next.value as SortStep);
-      }
+          ? { pathStep: last as PathStep }
+          : { sortStep: last as SortStep };
       updatePanel(panel, {
         ...patch,
-        status: failed ? "failed" : next.value.done ? "complete" : "running",
-        steps: useSimulationStore.getState().panels[panel].steps + 1,
+        status: failed ? "failed" : done ? "complete" : "running",
+        steps: useSimulationStore.getState().panels[panel].steps + consumed,
         elapsed,
         startedAt,
-        finishedAt: next.value.done ? performance.now() : null,
+        finishedAt: done ? performance.now() : null,
       });
-      if (next.value.done || failed) {
+      if (done || failed) {
         completedRef.current[panel] = true;
         if (stopOnFirst) {
           completedRef.current = { a: true, b: true };
+        }
+        // Hand audio focus to the other panel if it's still sorting.
+        const other = panel === "a" ? "b" : "a";
+        if (
+          mode === "sorting" &&
+          audioPanelRef.current === panel &&
+          !completedRef.current[other]
+        ) {
+          audioPanelRef.current = other;
+          setAudioPanel(other);
         }
         finalizeIfDone();
       }
@@ -231,12 +270,27 @@ export default function Home() {
 
   useEffect(() => {
     if (globalStatus !== "running" || speed === "manual") return;
+    const { delay, stepsPerTick } = SPEED_CONFIG[speed];
     const interval = window.setInterval(() => {
-      tickPanel("a");
-      tickPanel("b");
-    }, STEP_DELAYS[speed]);
+      if (!verifyingRef.current.a) tickPanel("a", stepsPerTick);
+      if (!verifyingRef.current.b) tickPanel("b", stepsPerTick);
+    }, delay);
     return () => window.clearInterval(interval);
   }, [speed, globalStatus, tickPanel]);
+
+  // Verification sweeps always animate at the fast (25ms) cadence,
+  // regardless of the chosen step delay — including manual mode.
+  useEffect(() => {
+    if (globalStatus === "ready" || globalStatus === "idle") return;
+    const interval = window.setInterval(() => {
+      for (const panel of ["a", "b"] as const) {
+        if (verifyingRef.current[panel] && !completedRef.current[panel]) {
+          tickPanel(panel, 1);
+        }
+      }
+    }, 25);
+    return () => window.clearInterval(interval);
+  }, [globalStatus, tickPanel]);
 
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
@@ -259,8 +313,7 @@ export default function Home() {
 
   function randomPair() {
     if (mode === "pathfinding") {
-      const available = PATH_ALGORITHMS.filter((item) => !item.locked).map((item) => item.id);
-      const [a, b] = pairFrom(available);
+      const [a, b] = pairFrom(PATH_ALGORITHMS.map((item) => item.id));
       setPathAlgorithms(a, b);
     } else {
       const [a, b] = pairFrom(SORT_ALGORITHMS.map((item) => item.id));
@@ -274,6 +327,14 @@ export default function Home() {
     () => ({
       a: algorithmLabel(currentAlgorithms.a),
       b: algorithmLabel(currentAlgorithms.b),
+    }),
+    [currentAlgorithms.a, currentAlgorithms.b],
+  );
+
+  const subtitles = useMemo(
+    () => ({
+      a: algorithmMeta(currentAlgorithms.a),
+      b: algorithmMeta(currentAlgorithms.b),
     }),
     [currentAlgorithms.a, currentAlgorithms.b],
   );
@@ -354,9 +415,13 @@ export default function Home() {
           ) : (
             <SortToolbar
               arraySize={arraySize}
+              distribution={distribution}
+              soundStyle={soundStyle}
               onArraySize={setArraySize}
+              onDistribution={setDistribution}
+              onSoundStyle={setSoundStyle}
               onShuffle={() => {
-                setSeedArray(makeArray(arraySize, Date.now()));
+                setSeedArray(makeArray(arraySize, distribution, Date.now()));
                 resetRun();
               }}
             />
@@ -366,6 +431,7 @@ export default function Home() {
         <ComparisonGrid
           mode={mode}
           titles={titles}
+          subtitles={subtitles}
           panels={panels}
           maze={maze}
           seedArray={seedArray}

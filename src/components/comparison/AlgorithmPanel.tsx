@@ -34,6 +34,7 @@ export function AlgorithmPanel({
   side,
   mode,
   title,
+  subtitle,
   run,
   maze,
   seedArray,
@@ -46,6 +47,7 @@ export function AlgorithmPanel({
   side: "A" | "B";
   mode: Mode;
   title: string;
+  subtitle?: string;
   run: PanelRunState;
   maze: MazeState;
   seedArray: number[];
@@ -61,7 +63,7 @@ export function AlgorithmPanel({
   const hint =
     mode === "pathfinding"
       ? "Draw walls, drag start or goal, then run."
-      : "Shuffle data, choose two algorithms, then run.";
+      : "Pick two algorithms and run. The speaker button chooses which panel you hear.";
   const stats =
     mode === "pathfinding"
       ? [
@@ -88,6 +90,11 @@ export function AlgorithmPanel({
               <h2 className="mt-2 truncate text-xl font-semibold tracking-[-0.015em] text-[var(--text)]">
                 {title}
               </h2>
+              {subtitle && (
+                <p className="mt-1 truncate font-mono text-[11px] text-[var(--muted)]">
+                  {subtitle}
+                </p>
+              )}
             </div>
             <div className="flex items-center gap-2">
               {mode === "sorting" && (
@@ -113,7 +120,19 @@ export function AlgorithmPanel({
                   )}
                 </Button>
               )}
-              <Badge className="bg-[var(--bg)] text-[var(--text)]">{run.status}</Badge>
+              <Badge
+                className={
+                  run.status === "running"
+                    ? "border-[var(--accent)] bg-[var(--result)] text-[var(--text)]"
+                    : run.status === "complete"
+                      ? "border-[var(--path)] bg-[color-mix(in_srgb,var(--path)_14%,var(--surface))] text-[var(--text)]"
+                      : run.status === "failed"
+                        ? "border-[var(--goal)] bg-[color-mix(in_srgb,var(--goal)_14%,var(--surface))] text-[var(--text)]"
+                        : "bg-[var(--bg)] text-[var(--text)]"
+                }
+              >
+                {run.status}
+              </Badge>
             </div>
           </div>
         </div>
