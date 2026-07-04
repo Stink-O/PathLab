@@ -13,6 +13,7 @@ import { PATH_ALGORITHMS, SORT_ALGORITHMS, SPEED_CONFIG } from "@/lib/constants"
 import { makeMaze, makeOpenGrid } from "@/lib/maze";
 import { pairFrom, randomInt } from "@/lib/random";
 import { makeArray } from "@/lib/sortData";
+import { playPathStepTone } from "@/lib/pathAudio";
 import { playSortStepTone } from "@/lib/sortAudio";
 import { createPathGenerator } from "@/simulation/pathfindingRunner";
 import { createSortGenerator } from "@/simulation/sortingRunner";
@@ -185,8 +186,18 @@ export default function Home() {
 
       const failed = "failed" in last && !!last.failed;
       const done = !!last.done || exhausted;
-      if (mode === "sorting" && audioPanelRef.current === panel) {
-        playSortStepTone(last as SortStep, soundStyleRef.current);
+      // Verification/trace sweeps are presentation, not algorithm work:
+      // freeze the clock at the value it had when the algorithm finished.
+      const displayElapsed =
+        "verify" in last && last.verify
+          ? useSimulationStore.getState().panels[panel].elapsed
+          : elapsed;
+      if (audioPanelRef.current === panel) {
+        if (mode === "sorting") {
+          playSortStepTone(last as SortStep, soundStyleRef.current);
+        } else {
+          playPathStepTone(last as PathStep, maze, soundStyleRef.current);
+        }
       }
       const patch =
         mode === "pathfinding"
@@ -196,7 +207,7 @@ export default function Home() {
         ...patch,
         status: failed ? "failed" : done ? "complete" : "running",
         steps: useSimulationStore.getState().panels[panel].steps + consumed,
-        elapsed,
+        elapsed: displayElapsed,
         startedAt,
         finishedAt: done ? performance.now() : null,
       });
@@ -205,20 +216,16 @@ export default function Home() {
         if (stopOnFirst) {
           completedRef.current = { a: true, b: true };
         }
-        // Hand audio focus to the other panel if it's still sorting.
+        // Hand audio focus to the other panel if it's still running.
         const other = panel === "a" ? "b" : "a";
-        if (
-          mode === "sorting" &&
-          audioPanelRef.current === panel &&
-          !completedRef.current[other]
-        ) {
+        if (audioPanelRef.current === panel && !completedRef.current[other]) {
           audioPanelRef.current = other;
           setAudioPanel(other);
         }
         finalizeIfDone();
       }
     },
-    [finalizeIfDone, mode, stopOnFirst, updatePanel],
+    [finalizeIfDone, maze, mode, stopOnFirst, updatePanel],
   );
 
   const start = useCallback(() => {
@@ -388,7 +395,9 @@ export default function Home() {
           {mode === "pathfinding" ? (
             <MazeToolbar
               gridSize={gridSize}
+              soundStyle={soundStyle}
               onGridSize={setGridSize}
+              onSoundStyle={setSoundStyle}
               onGenerate={() => {
                 setMaze((current) => makeMaze(gridSize, Date.now(), current));
                 resetRun();
@@ -450,7 +459,7 @@ export default function Home() {
             }));
             resetRun();
           }}
-          audioPanel={mode === "sorting" ? audioPanel : null}
+          audioPanel={audioPanel}
           onAudioPanel={setAudioPanel}
         />
       </div>

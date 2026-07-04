@@ -50,7 +50,7 @@ export function ComparisonGrid({
   const legend = mode === "pathfinding" ? PATH_LEGEND : SORT_LEGEND;
   const hint =
     mode === "pathfinding"
-      ? "Draw walls on either maze, drag the start or goal, then run."
+      ? "Draw walls on either maze, drag the start or goal, then run. The speaker button picks which search you hear."
       : "Both panels sort the same data. The speaker button picks which one you hear.";
 
   return (

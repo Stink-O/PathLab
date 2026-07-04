@@ -79,29 +79,27 @@ export function AlgorithmPanel({
           </div>
         </div>
         <div className="flex shrink-0 items-center gap-3 pt-1.5">
-          {mode === "sorting" && (
-            <Button
-              variant={audioEnabled ? "primary" : "secondary"}
-              className="h-9 w-9 px-0"
-              onClick={onToggleAudio}
-              aria-label={
-                audioEnabled
-                  ? `Mute audio for algorithm ${side}`
-                  : `Play audio for algorithm ${side}`
-              }
-              title={
-                audioEnabled
-                  ? `Mute audio for algorithm ${side}`
-                  : `Play audio for algorithm ${side}`
-              }
-            >
-              {audioEnabled ? (
-                <Volume2 size={17} strokeWidth={1.5} />
-              ) : (
-                <VolumeX size={17} strokeWidth={1.5} />
-              )}
-            </Button>
-          )}
+          <Button
+            variant={audioEnabled ? "primary" : "secondary"}
+            className="h-9 w-9 px-0"
+            onClick={onToggleAudio}
+            aria-label={
+              audioEnabled
+                ? `Mute audio for algorithm ${side}`
+                : `Play audio for algorithm ${side}`
+            }
+            title={
+              audioEnabled
+                ? `Mute audio for algorithm ${side}`
+                : `Play audio for algorithm ${side}`
+            }
+          >
+            {audioEnabled ? (
+              <Volume2 size={17} strokeWidth={1.5} />
+            ) : (
+              <VolumeX size={17} strokeWidth={1.5} />
+            )}
+          </Button>
           <StatusIndicator status={run.status} />
         </div>
       </header>

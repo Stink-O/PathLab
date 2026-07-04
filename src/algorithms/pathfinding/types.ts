@@ -31,6 +31,8 @@ export type PathStep = {
   path?: string[];
   done?: boolean;
   failed?: boolean;
+  /** Step belongs to the post-search path trace, not the algorithm. */
+  verify?: boolean;
 };
 
 export type PathResult = {

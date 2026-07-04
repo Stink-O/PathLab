@@ -4,17 +4,21 @@ import { Shuffle, Trash2, Wand2 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Field } from "@/components/ui/Field";
 import { Select } from "@/components/ui/Select";
-import type { GridSize } from "@/lib/constants";
+import { SOUND_STYLES, type GridSize, type SoundStyle } from "@/lib/constants";
 
 export function MazeToolbar({
   gridSize,
+  soundStyle,
   onGridSize,
+  onSoundStyle,
   onGenerate,
   onClear,
   onRandomPoints,
 }: {
   gridSize: GridSize;
+  soundStyle: SoundStyle;
   onGridSize: (size: GridSize) => void;
+  onSoundStyle: (style: SoundStyle) => void;
   onGenerate: () => void;
   onClear: () => void;
   onRandomPoints: () => void;
@@ -28,6 +32,18 @@ export function MazeToolbar({
           <option value="large">Large</option>
           <option value="xl">XL</option>
           <option value="xxl">XXL</option>
+        </Select>
+      </Field>
+      <Field label="Sound">
+        <Select
+          value={soundStyle}
+          onChange={(event) => onSoundStyle(event.target.value as SoundStyle)}
+        >
+          {SOUND_STYLES.map((item) => (
+            <option key={item.id} value={item.id}>
+              {item.label}
+            </option>
+          ))}
         </Select>
       </Field>
       <Button onClick={onGenerate}>
