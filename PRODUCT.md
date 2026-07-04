@@ -14,11 +14,11 @@ PathLab lets users compare algorithm behavior in an interactive lab. Success mea
 
 ## Brand Personality
 
-Lab-like, technical, and approachable. The current visual direction should stay mostly intact: restrained, tactile, and focused on the simulation rather than a loud portfolio showcase.
+Lab-like, technical, and approachable. The visual direction is "bench instrument": one continuous surface organized by hairline rules instead of cards, squared corners (4px max), cool graphite neutrals, and a single magenta accent for actions. The two comparison panels read as channels A and B on a measuring instrument. See DESIGN.md for the concrete system.
 
 ## Anti-references
 
-Avoid generic SaaS dashboards, overproduced landing pages, toy-like classroom styling, and decorative effects that compete with the maze or sorting visualizations.
+Avoid generic SaaS dashboards, overproduced landing pages, toy-like classroom styling, and decorative effects that compete with the maze or sorting visualizations. Specifically banned in this codebase: pill-shaped elements, text below 13px, and cards nested inside cards.
 
 ## Design Principles
 

@@ -16,18 +16,20 @@ export function AppHeader({
   onTheme: (theme: "light" | "dark") => void;
 }) {
   return (
-    <header className="flex flex-col gap-4 border-b border-[var(--border)] py-5 md:flex-row md:items-center md:justify-between">
-      <div>
-        <p className="font-mono text-[11px] uppercase tracking-[0.14em] text-[var(--muted)]">
-          Algorithm comparison lab
-        </p>
-        <h1 className="mt-1 text-3xl font-semibold tracking-[-0.02em] text-[var(--text)]">
+    <header className="flex min-h-14 items-stretch justify-between gap-4 border-b border-[var(--border)]">
+      <div className="flex items-center gap-3">
+        <h1 className="text-[19px] font-semibold tracking-[-0.01em] text-[var(--text)]">
           PathLab
         </h1>
+        <p className="hidden text-[15px] text-[var(--muted)] md:block">
+          Race two algorithms side by side
+        </p>
       </div>
-      <div className="flex items-center gap-2">
+      <div className="flex items-stretch gap-2">
         <ModeSwitch mode={mode} onMode={onMode} />
-        <ThemeToggle theme={theme} onTheme={onTheme} />
+        <div className="flex items-center">
+          <ThemeToggle theme={theme} onTheme={onTheme} />
+        </div>
       </div>
     </header>
   );

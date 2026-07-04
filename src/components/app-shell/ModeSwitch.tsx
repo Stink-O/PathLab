@@ -1,8 +1,12 @@
 "use client";
 
-import { GitCompareArrows, ListOrdered } from "lucide-react";
 import { cn } from "@/lib/cn";
 import type { Mode } from "@/lib/constants";
+
+const MODES: { id: Mode; label: string }[] = [
+  { id: "pathfinding", label: "Pathfinding" },
+  { id: "sorting", label: "Sorting" },
+];
 
 export function ModeSwitch({
   mode,
@@ -12,29 +16,33 @@ export function ModeSwitch({
   onMode: (mode: Mode) => void;
 }) {
   return (
-    <div className="grid grid-cols-2 rounded-[14px] border border-[var(--border)] bg-[var(--surface)] p-1">
-      {[
-        { id: "pathfinding" as const, label: "Pathfinding", icon: GitCompareArrows },
-        { id: "sorting" as const, label: "Sorting", icon: ListOrdered },
-      ].map((item) => {
-        const Icon = item.icon;
+    <nav aria-label="Mode" className="flex items-stretch self-stretch">
+      {MODES.map((item) => {
+        const active = mode === item.id;
         return (
           <button
             key={item.id}
             type="button"
+            aria-current={active ? "page" : undefined}
             onClick={() => onMode(item.id)}
             className={cn(
-              "flex h-9 items-center justify-center gap-2 rounded-[10px] px-3 text-sm transition",
-              mode === item.id
-                ? "bg-[var(--text)] text-[var(--bg)]"
+              "relative px-4 text-[15px] font-medium transition-colors duration-150",
+              "focus-visible:outline focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-[var(--accent)]",
+              active
+                ? "text-[var(--text)]"
                 : "text-[var(--muted)] hover:text-[var(--text)]",
             )}
           >
-            <Icon size={16} strokeWidth={1.5} />
             {item.label}
+            {active && (
+              <span
+                aria-hidden="true"
+                className="absolute inset-x-3 -bottom-px h-[2px] bg-[var(--accent)]"
+              />
+            )}
           </button>
         );
       })}
-    </div>
+    </nav>
   );
 }

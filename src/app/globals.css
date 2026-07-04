@@ -1,46 +1,50 @@
 @import "tailwindcss";
 
 :root {
-  --bg: #f4f1ea;
-  --surface: #fcfaf5;
-  --border: #d8d1c5;
-  --text: #1d1b18;
-  --muted: #6f6a61;
-  --accent: #c88432;
-  --visited: #8b9ba8;
-  --frontier: #d5a253;
-  --path: #4f8a5b;
-  --wall: #2b2925;
-  --start: #4f6f9f;
-  --goal: #9f5a4f;
-  --cell: #f7f3eb;
-  --bar: #bbb3a5;
-  --swap: #a46349;
-  --result: #f0dfc4;
-  --result-border: #d4a966;
-  --edge: rgba(255, 255, 255, 0.45);
-  --panel-shadow: rgba(29, 27, 24, 0.06);
+  --bg: #f5f6f8;
+  --surface: #ffffff;
+  --surface-2: #e9ebef;
+  --border: #d5d8de;
+  --text: #171a1f;
+  --muted: #545b67;
+  --accent: #b02061;
+  --on-accent: #ffffff;
+  --success: #23703f;
+  --danger: #b3382e;
+
+  /* visualization */
+  --cell: #ffffff;
+  --wall: #22252b;
+  --visited: #93a6c6;
+  --frontier: #dea22b;
+  --path: #2f9e57;
+  --start: #0f7bb8;
+  --goal: #cf4a41;
+  --swap: #d95f2b;
+  --bar: #c7ccd5;
 }
 
 :root[data-theme="dark"] {
-  --bg: #12110f;
-  --surface: #191714;
-  --border: #302c26;
-  --text: #f4f1ea;
-  --muted: #a7a096;
-  --cell: #211f1b;
-  --bar: #5f584f;
-  --result: #2a2419;
-  --result-border: #6f4b22;
-  --edge: rgba(255, 255, 255, 0.05);
-  --panel-shadow: rgba(0, 0, 0, 0.3);
-  --wall: #3f3a32;
-  --visited: #526073;
-  --frontier: #dca94f;
-  --path: #5ca66b;
-  --start: #6b93cf;
-  --goal: #c9705c;
-  --swap: #c47a58;
+  --bg: #131519;
+  --surface: #1b1e24;
+  --surface-2: #242830;
+  --border: #2f343d;
+  --text: #edeff3;
+  --muted: #9aa2b0;
+  --accent: #ef5da2;
+  --on-accent: #190a12;
+  --success: #4cc077;
+  --danger: #e2635a;
+
+  --cell: #1c1f26;
+  --wall: #3b414c;
+  --visited: #6c83b8;
+  --frontier: #e3ac41;
+  --path: #3fae67;
+  --start: #4aa3e8;
+  --goal: #e0655c;
+  --swap: #dd7a45;
+  --bar: #575e6b;
 }
 
 @theme inline {
@@ -63,6 +67,7 @@ body {
   min-height: 100%;
   background: var(--bg);
   color: var(--text);
+  font-size: 15px;
   font-family: var(--font-geist-sans), Inter, ui-sans-serif, system-ui, sans-serif;
 }
 
@@ -72,19 +77,30 @@ input {
   font: inherit;
 }
 
-.noise-layer {
-  pointer-events: none;
-  position: fixed;
-  inset: 0;
-  z-index: 0;
-  opacity: 0.32;
-  mix-blend-mode: multiply;
-  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 180 180' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.78' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='180' height='180' filter='url(%23n)' opacity='0.18'/%3E%3C/svg%3E");
+/* Flat field with a custom chevron; native select popups are fine. */
+.select-field {
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 16 16'%3E%3Cpath d='M4 6l4 4 4-4' fill='none' stroke='%23545b67' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
 }
 
-:root[data-theme="dark"] .noise-layer {
-  mix-blend-mode: screen;
-  opacity: 0.06;
+:root[data-theme="dark"] .select-field {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 16 16'%3E%3Cpath d='M4 6l4 4 4-4' fill='none' stroke='%239aa2b0' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+}
+
+@keyframes status-pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.35;
+  }
+}
+
+.status-dot-running {
+  animation: status-pulse 1.2s ease-in-out infinite;
 }
 
 @media (prefers-reduced-motion: reduce) {

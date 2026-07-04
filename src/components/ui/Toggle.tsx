@@ -1,5 +1,6 @@
 "use client";
 
+import { Check } from "lucide-react";
 import { cn } from "@/lib/cn";
 
 export function Toggle({
@@ -15,7 +16,7 @@ export function Toggle({
 }) {
   return (
     <label
-      className="flex cursor-pointer items-center gap-2 text-sm text-[var(--muted)]"
+      className="flex cursor-pointer select-none items-center gap-2.5 text-[15px] text-[var(--text)]"
       title={description}
     >
       <input
@@ -26,18 +27,16 @@ export function Toggle({
         className="peer sr-only"
       />
       <span
+        aria-hidden="true"
         className={cn(
-          "relative h-5 w-9 rounded-[10px] border border-[var(--border)] bg-[var(--bg)] transition",
+          "grid h-[18px] w-[18px] place-items-center rounded-[4px] border transition-colors duration-150",
           "peer-focus-visible:outline peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-[var(--accent)]",
-          checked && "border-[var(--accent)] bg-[var(--accent)]",
+          checked
+            ? "border-[var(--accent)] bg-[var(--accent)] text-[var(--on-accent)]"
+            : "border-[var(--border)] bg-[var(--surface)] text-transparent",
         )}
       >
-        <span
-          className={cn(
-            "absolute left-0.5 top-0.5 h-4 w-4 rounded-[8px] bg-[var(--surface)] transition",
-            checked && "translate-x-4 bg-[#16120C]",
-          )}
-        />
+        <Check size={13} strokeWidth={3} />
       </span>
       {label}
     </label>

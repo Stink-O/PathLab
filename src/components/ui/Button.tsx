@@ -18,15 +18,15 @@ export function Button({
     <motion.button
       whileTap={disabled ? undefined : { scale: 0.98 }}
       className={cn(
-        "inline-flex h-10 items-center justify-center gap-2 rounded-[10px] border px-3 text-sm font-medium transition",
+        "inline-flex h-10 items-center justify-center gap-2 rounded-[4px] px-3.5 text-[15px] font-medium transition-colors duration-150",
         "focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent)]",
         variant === "primary" &&
-          "border-[var(--accent)] bg-[var(--accent)] text-[#16120C] shadow-[inset_0_1px_rgba(255,255,255,.28)]",
+          "bg-[var(--accent)] text-[var(--on-accent)] hover:brightness-110",
         variant === "secondary" &&
-          "border-[var(--border)] bg-[var(--surface)] text-[var(--text)] shadow-[inset_0_1px_var(--edge)] hover:border-[var(--accent)]",
+          "border border-[var(--border)] bg-[var(--surface)] text-[var(--text)] hover:bg-[var(--surface-2)]",
         variant === "ghost" &&
-          "border-transparent bg-transparent text-[var(--muted)] hover:text-[var(--text)]",
-        disabled && "cursor-not-allowed opacity-45",
+          "bg-transparent text-[var(--muted)] hover:bg-[var(--surface-2)] hover:text-[var(--text)]",
+        disabled && "cursor-not-allowed opacity-40",
         className,
       )}
       disabled={disabled}

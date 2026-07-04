@@ -118,7 +118,7 @@ export function MazeGrid({
       role="grid"
       tabIndex={0}
       aria-label={`${maze.cols} by ${maze.rows} maze. Start at column ${maze.start.x + 1}, row ${maze.start.y + 1}. Goal at column ${maze.goal.x + 1}, row ${maze.goal.y + 1}. ${wallCount} walls, ${visitedCount} visited cells, ${frontierCount} frontier cells.`}
-      className="grid max-w-full overflow-hidden rounded-[14px] border border-[var(--border)] bg-[var(--border)]"
+      className="grid max-w-full overflow-hidden rounded-[4px] border border-[var(--border)] bg-[var(--border)]"
       style={{ gridTemplateColumns: `repeat(${maze.cols}, minmax(0, 1fr))` }}
       onPointerDown={(event) => {
         const cell = targetCell(event);

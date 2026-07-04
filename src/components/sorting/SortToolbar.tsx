@@ -2,6 +2,7 @@
 
 import { RefreshCcw } from "lucide-react";
 import { Button } from "@/components/ui/Button";
+import { Field } from "@/components/ui/Field";
 import { Select } from "@/components/ui/Select";
 import {
   ARRAY_SIZES,
@@ -30,44 +31,47 @@ export function SortToolbar({
   onShuffle: () => void;
 }) {
   return (
-    <div className="flex flex-wrap items-center gap-2">
-      <Select
-        value={arraySize}
-        onChange={(event) => onArraySize(Number(event.target.value) as ArraySize)}
-        aria-label="Array size"
-      >
-        {ARRAY_SIZES.map((size) => (
-          <option key={size} value={size}>
-            {size} items
-          </option>
-        ))}
-      </Select>
-      <Select
-        value={distribution}
-        onChange={(event) => onDistribution(event.target.value as SortDistribution)}
-        aria-label="Input distribution"
-      >
-        {SORT_DISTRIBUTIONS.map((item) => (
-          <option key={item.id} value={item.id}>
-            {item.label}
-          </option>
-        ))}
-      </Select>
-      <Select
-        value={soundStyle}
-        onChange={(event) => onSoundStyle(event.target.value as SoundStyle)}
-        aria-label="Sound style"
-      >
-        {SOUND_STYLES.map((item) => (
-          <option key={item.id} value={item.id}>
-            Sound: {item.label}
-          </option>
-        ))}
-      </Select>
+    <>
+      <Field label="Array size">
+        <Select
+          value={arraySize}
+          onChange={(event) => onArraySize(Number(event.target.value) as ArraySize)}
+        >
+          {ARRAY_SIZES.map((size) => (
+            <option key={size} value={size}>
+              {size} items
+            </option>
+          ))}
+        </Select>
+      </Field>
+      <Field label="Distribution">
+        <Select
+          value={distribution}
+          onChange={(event) => onDistribution(event.target.value as SortDistribution)}
+        >
+          {SORT_DISTRIBUTIONS.map((item) => (
+            <option key={item.id} value={item.id}>
+              {item.label}
+            </option>
+          ))}
+        </Select>
+      </Field>
+      <Field label="Sound">
+        <Select
+          value={soundStyle}
+          onChange={(event) => onSoundStyle(event.target.value as SoundStyle)}
+        >
+          {SOUND_STYLES.map((item) => (
+            <option key={item.id} value={item.id}>
+              {item.label}
+            </option>
+          ))}
+        </Select>
+      </Field>
       <Button onClick={onShuffle}>
-        <RefreshCcw size={16} strokeWidth={1.5} />
+        <RefreshCcw size={17} strokeWidth={1.5} />
         New data
       </Button>
-    </div>
+    </>
   );
 }

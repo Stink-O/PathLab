@@ -76,7 +76,7 @@ export function SortBars({ step, seed }: { step?: SortStep; seed: number[] }) {
   return (
     <canvas
       ref={canvasRef}
-      className="block h-[300px] w-full rounded-[14px] border border-[var(--border)] bg-[var(--cell)]"
+      className="block h-[300px] w-full rounded-[4px] border border-[var(--border)] bg-[var(--cell)]"
       role="img"
       aria-label="Bar chart of the array being sorted"
     />

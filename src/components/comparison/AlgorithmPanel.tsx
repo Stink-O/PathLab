@@ -1,34 +1,16 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { Volume2, VolumeX } from "lucide-react";
-import { Badge } from "@/components/ui/Badge";
+import { Check, Volume2, VolumeX } from "lucide-react";
 import { Button } from "@/components/ui/Button";
-import { Panel } from "@/components/ui/Panel";
+import { StatusIndicator } from "@/components/ui/StatusIndicator";
 import { MazeGrid } from "@/components/pathfinding/MazeGrid";
 import { SortBars } from "@/components/sorting/SortBars";
-import { ResultBadge } from "./ResultBadge";
 import type { MazeState, Point } from "@/algorithms/pathfinding/types";
+import { cn } from "@/lib/cn";
 import type { Mode } from "@/lib/constants";
 import { formatMs } from "@/lib/timing";
 import type { PanelRunState } from "@/store/useSimulationStore";
-
-const pathLegend = [
-  { label: "Start", color: "var(--start)" },
-  { label: "Goal", color: "var(--goal)" },
-  { label: "Wall", color: "var(--wall)" },
-  { label: "Visited", color: "var(--visited)" },
-  { label: "Frontier", color: "var(--frontier)" },
-  { label: "Path", color: "var(--path)" },
-];
-
-const sortLegend = [
-  { label: "Idle", color: "var(--bar)" },
-  { label: "Active", color: "var(--visited)" },
-  { label: "Compared", color: "var(--frontier)" },
-  { label: "Swapped", color: "var(--swap)" },
-  { label: "Sorted", color: "var(--path)" },
-];
 
 export function AlgorithmPanel({
   side,
@@ -43,6 +25,7 @@ export function AlgorithmPanel({
   onMovePoint,
   audioEnabled,
   onToggleAudio,
+  className,
 }: {
   side: "A" | "B";
   mode: Mode;
@@ -56,137 +39,123 @@ export function AlgorithmPanel({
   onMovePoint?: (kind: "start" | "goal", point: Point) => void;
   audioEnabled?: boolean;
   onToggleAudio?: () => void;
+  className?: string;
 }) {
   const pathStep = run.pathStep;
   const sortStep = run.sortStep;
-  const legend = mode === "pathfinding" ? pathLegend : sortLegend;
-  const hint =
-    mode === "pathfinding"
-      ? "Draw walls, drag start or goal, then run."
-      : "Pick two algorithms and run. The speaker button chooses which panel you hear.";
-  const stats =
+  const stats: [string, React.ReactNode][] =
     mode === "pathfinding"
       ? [
-          ["Time elapsed", formatMs(run.elapsed)],
-          ["Step count", run.steps],
-          ["Visited nodes", pathStep?.visited.size ?? 0],
+          ["Elapsed", formatMs(run.elapsed)],
+          ["Steps", run.steps],
+          ["Visited", pathStep?.visited.size ?? 0],
           ["Path length", pathStep?.path?.length ?? 0],
         ]
       : [
-          ["Time elapsed", formatMs(run.elapsed)],
-          ["Step count", run.steps],
+          ["Elapsed", formatMs(run.elapsed)],
+          ["Steps", run.steps],
           ["Comparisons", sortStep?.counters.comparisons ?? 0],
           ["Swaps", sortStep?.counters.swaps ?? 0],
-          ["Array accesses", sortStep?.counters.accesses ?? 0],
+          ["Accesses", sortStep?.counters.accesses ?? 0],
         ];
 
   return (
-    <motion.div initial={false} animate={{ opacity: 1, y: 0 }} className="min-w-0">
-      <Panel className="overflow-hidden">
-        <div className="border-b border-[var(--border)] bg-[color-mix(in_srgb,var(--surface)_72%,var(--bg))] px-4 py-3">
-          <div className="flex flex-wrap items-start justify-between gap-3">
-            <div className="min-w-0">
-              <Badge>Algorithm {side}</Badge>
-              <h2 className="mt-2 truncate text-xl font-semibold tracking-[-0.015em] text-[var(--text)]">
-                {title}
-              </h2>
-              {subtitle && (
-                <p className="mt-1 truncate font-mono text-[11px] text-[var(--muted)]">
-                  {subtitle}
-                </p>
-              )}
-            </div>
-            <div className="flex items-center gap-2">
-              {mode === "sorting" && (
-                <Button
-                  variant={audioEnabled ? "primary" : "secondary"}
-                  className="h-9 w-9 px-0"
-                  onClick={onToggleAudio}
-                  aria-label={
-                    audioEnabled
-                      ? `Audio enabled for Algorithm ${side}`
-                      : `Enable audio for Algorithm ${side}`
-                  }
-                  title={
-                    audioEnabled
-                      ? `Audio enabled for Algorithm ${side}`
-                      : `Enable audio for Algorithm ${side}`
-                  }
-                >
-                  {audioEnabled ? (
-                    <Volume2 size={16} strokeWidth={1.5} />
-                  ) : (
-                    <VolumeX size={16} strokeWidth={1.5} />
-                  )}
-                </Button>
-              )}
-              <Badge
-                className={
-                  run.status === "running"
-                    ? "border-[var(--accent)] bg-[var(--result)] text-[var(--text)]"
-                    : run.status === "complete"
-                      ? "border-[var(--path)] bg-[color-mix(in_srgb,var(--path)_14%,var(--surface))] text-[var(--text)]"
-                      : run.status === "failed"
-                        ? "border-[var(--goal)] bg-[color-mix(in_srgb,var(--goal)_14%,var(--surface))] text-[var(--text)]"
-                        : "bg-[var(--bg)] text-[var(--text)]"
-                }
-              >
-                {run.status}
-              </Badge>
-            </div>
+    <section aria-label={`Algorithm ${side}: ${title}`} className={cn("flex min-w-0 flex-col gap-5", className)}>
+      <header className="flex items-start justify-between gap-4">
+        <div className="flex min-w-0 items-start gap-3">
+          <span
+            aria-hidden="true"
+            className="mt-1 grid h-8 w-8 shrink-0 place-items-center rounded-[4px] bg-[var(--text)] font-mono text-[15px] font-bold text-[var(--bg)]"
+          >
+            {side}
+          </span>
+          <div className="min-w-0">
+            <h2 className="text-[24px] font-semibold leading-tight tracking-[-0.015em] text-[var(--text)]">
+              {title}
+            </h2>
+            {subtitle && (
+              <p className="mt-1 font-mono text-[13px] text-[var(--muted)]">{subtitle}</p>
+            )}
           </div>
         </div>
-        <div className="grid gap-4 p-4">
-          <div className="grid min-w-0 gap-2 text-xs text-[var(--muted)] md:grid-cols-[1fr_auto] md:items-center">
-            <p className="min-w-0">{hint}</p>
-            <div className="grid w-full min-w-0 grid-cols-3 gap-x-2 gap-y-1 sm:flex sm:w-auto sm:flex-wrap sm:items-center sm:gap-x-3">
-              {legend.map((item) => (
-                <span key={item.label} className="inline-flex min-w-0 items-center gap-1.5">
-                  <span
-                    className="h-2.5 w-2.5 shrink-0 rounded-[3px] border border-[var(--border)]"
-                    style={{ backgroundColor: item.color }}
-                    aria-hidden="true"
-                  />
-                  <span className="truncate">{item.label}</span>
-                </span>
-              ))}
-            </div>
-          </div>
-          {mode === "pathfinding" ? (
-            <MazeGrid
-              maze={maze}
-              step={pathStep}
-              editable={editable}
-              onToggleWall={onToggleWall}
-              onMovePoint={onMovePoint}
-            />
-          ) : (
-            <SortBars step={sortStep} seed={seedArray} />
-          )}
-
-          <div className="grid gap-3 border-t border-[var(--border)] pt-4 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-end">
-            <div className="min-h-10 min-w-0">
-              {run.resultLabels.length > 0 ? (
-                <div className="flex flex-wrap gap-2">
-                  {run.resultLabels.map((label) => (
-                    <ResultBadge key={label} label={label} />
-                  ))}
-                </div>
+        <div className="flex shrink-0 items-center gap-3 pt-1.5">
+          {mode === "sorting" && (
+            <Button
+              variant={audioEnabled ? "primary" : "secondary"}
+              className="h-9 w-9 px-0"
+              onClick={onToggleAudio}
+              aria-label={
+                audioEnabled
+                  ? `Mute audio for algorithm ${side}`
+                  : `Play audio for algorithm ${side}`
+              }
+              title={
+                audioEnabled
+                  ? `Mute audio for algorithm ${side}`
+                  : `Play audio for algorithm ${side}`
+              }
+            >
+              {audioEnabled ? (
+                <Volume2 size={17} strokeWidth={1.5} />
               ) : (
-                <p className="text-xs text-[var(--muted)]">Run both algorithms to compare results.</p>
+                <VolumeX size={17} strokeWidth={1.5} />
               )}
-            </div>
-            <div className="grid min-w-0 grid-cols-2 gap-x-4 gap-y-2 lg:min-w-[260px]">
-              {stats.map(([label, value]) => (
-                <div key={label} className="min-w-0 border-b border-[var(--border)] pb-1">
-                  <div className="truncate text-[11px] text-[var(--muted)]">{label}</div>
-                  <div className="mt-0.5 truncate font-mono text-xs text-[var(--text)]">{value}</div>
-                </div>
-              ))}
-            </div>
-          </div>
+            </Button>
+          )}
+          <StatusIndicator status={run.status} />
         </div>
-      </Panel>
-    </motion.div>
+      </header>
+
+      {mode === "pathfinding" ? (
+        <MazeGrid
+          maze={maze}
+          step={pathStep}
+          editable={editable}
+          onToggleWall={onToggleWall}
+          onMovePoint={onMovePoint}
+        />
+      ) : (
+        <SortBars step={sortStep} seed={seedArray} />
+      )}
+
+      <div className="overflow-hidden">
+        {/* Row-start dividers are pulled outside and clipped so wrapping stays clean. */}
+        <div className="ml-[calc(-1.25rem-1px)] flex flex-wrap gap-y-4">
+          {stats.map(([label, value]) => (
+            <div key={label} className="min-w-0 border-l border-[var(--border)] pl-5 pr-7">
+              <div className="text-[13px] text-[var(--muted)]">{label}</div>
+              <div className="mt-0.5 font-mono text-[20px] font-medium tabular-nums leading-tight text-[var(--text)]">
+                {value}
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <div className="min-h-7">
+        {run.resultLabels.length > 0 ? (
+          <ul className="flex flex-wrap gap-x-6 gap-y-1.5">
+            {run.resultLabels.map((label) => (
+              <motion.li
+                key={label}
+                initial={{ opacity: 0, y: 4 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.2, ease: "easeOut" }}
+                className="flex items-center gap-1.5 text-[15px] font-medium text-[var(--success)]"
+              >
+                <Check size={16} strokeWidth={2.5} aria-hidden="true" />
+                {label}
+              </motion.li>
+            ))}
+          </ul>
+        ) : (
+          <p className="text-[14px] text-[var(--muted)]">
+            {run.status === "complete" || run.status === "failed"
+              ? "No category wins this run."
+              : "Run both algorithms to compare results."}
+          </p>
+        )}
+      </div>
+    </section>
   );
 }

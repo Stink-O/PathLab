@@ -13,14 +13,14 @@ export function ThemeToggle({
   return (
     <Button
       variant="ghost"
-      aria-label="Theme"
+      aria-label={theme === "light" ? "Switch to dark theme" : "Switch to light theme"}
       onClick={() => onTheme(theme === "light" ? "dark" : "light")}
       className="w-10 px-0"
     >
       {theme === "light" ? (
-        <Moon size={17} strokeWidth={1.5} />
+        <Moon size={18} strokeWidth={1.5} />
       ) : (
-        <Sun size={17} strokeWidth={1.5} />
+        <Sun size={18} strokeWidth={1.5} />
       )}
     </Button>
   );

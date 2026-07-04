@@ -341,8 +341,7 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-[var(--bg)] text-[var(--text)]">
-      <div className="noise-layer" />
-      <div className="relative mx-auto flex min-h-screen w-full max-w-[1600px] flex-col px-4 md:px-6">
+      <div className="relative mx-auto flex min-h-screen w-full max-w-[1720px] flex-col px-4 md:px-8">
         <AppHeader
           mode={mode}
           theme={theme}
@@ -385,9 +384,7 @@ export default function Home() {
           onPause={() => setGlobalStatus("paused")}
           onReset={resetRun}
           onManualStep={manualStep}
-        />
-
-        <div className="mb-4">
+        >
           {mode === "pathfinding" ? (
             <MazeToolbar
               gridSize={gridSize}
@@ -426,7 +423,7 @@ export default function Home() {
               }}
             />
           )}
-        </div>
+        </ControlBar>
 
         <ComparisonGrid
           mode={mode}
